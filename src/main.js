@@ -1,4 +1,7 @@
 import { getFile, saveFile } from "./github.js";
+import { Editor } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 // Навігацыя паміж раздзеламі
 document.querySelectorAll(".nav-link").forEach((link) => {
   link.addEventListener("click", (e) => {
@@ -37,23 +40,63 @@ async function loadNews() {
       .map(
         (item) => `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; border:1px solid #222; margin-bottom:8px; background:#111;">
-        <div>
-          <div style="font-size:11px; color:#dc2626; font-weight:700; margin-bottom:4px;">${item.date}</div>
-          <div style="font-size:14px; font-weight:600;">${item.title}</div>
-        </div>
-        <button data-id="${item.id}" class="edit-btn" style="background:transparent; border:1px solid #333; color:#999; padding:6px 14px; font-size:11px; cursor:pointer;">
-          Рэдагаваць
-        </button>
-      </div>
+  <div>
+    <div style="font-size:11px; color:#dc2626; font-weight:700; margin-bottom:4px;">${item.date}</div>
+    <div style="font-size:14px; font-weight:600;">${item.title}</div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button data-id="${item.id}" class="edit-btn" style="background:transparent; border:1px solid #333; color:#999; padding:6px 14px; font-size:11px; cursor:pointer;">
+      Рэдагаваць
+    </button>
+    <button data-id="${item.id}" class="delete-btn" style="background:transparent; border:1px solid #333; color:#666; padding:6px 14px; font-size:11px; cursor:pointer;">
+      Выдаліць
+    </button>
+  </div>
+</div>
     `,
       )
       .join("");
 
-    document.getElementById("news-list").addEventListener("click", (e) => {
-      const btn = e.target.closest(".edit-btn");
-      if (!btn) return;
-      const item = news.find((n) => String(n.id) === String(btn.dataset.id));
-      if (item) openNewsEditor(item, news, sha);
+    document
+      .getElementById("news-list")
+      .addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".edit-btn");
+        const deleteBtn = e.target.closest(".delete-btn");
+
+        if (editBtn) {
+          const item = news.find(
+            (n) => String(n.id) === String(editBtn.dataset.id),
+          );
+          if (item) openNewsEditor(item, news, sha);
+        }
+
+        if (deleteBtn) {
+          if (!confirm("Выдаліць навіну?")) return;
+          const updated = news.filter(
+            (n) => String(n.id) !== String(deleteBtn.dataset.id),
+          );
+          try {
+            await saveFile("public/locales/news-be.json", updated, sha);
+            loadNews();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      });
+
+    document.getElementById("add-news-btn").addEventListener("click", () => {
+      const maxId = Math.max(...news.map((n) => parseInt(n.id) || 0));
+      const newItem = {
+        id: maxId + 1,
+        date: "",
+        title: "",
+        excerpt: "",
+        image: "",
+        image_thumb: "",
+        content: "",
+      };
+      const updatedNews = [newItem, ...news];
+      openNewsEditor(newItem, updatedNews, sha);
     });
   } catch (e) {
     document.getElementById("news-list").innerHTML =
@@ -121,17 +164,69 @@ function openNewsEditor(item, allNewsData, sha) {
 
   document.getElementById("back-btn").addEventListener("click", loadNews);
 
-  const quill = new Quill("#f-content-editor", {
-    theme: "snow",
-    modules: {
-      toolbar: [
-        ["bold", "italic"],
-        [{ header: 3 }],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["clean"],
-      ],
-    },
+  const editor = new Editor({
+    element: document.getElementById("f-content-editor"),
+    extensions: [StarterKit, Link.configure({ openOnClick: false })],
+    content: item.content || "",
   });
+
+  const toolbar = document.createElement("div");
+  toolbar.style.cssText =
+    "display:flex; gap:4px; padding:8px; background:#f5f5f5; border:1px solid #ccc; border-bottom:none; flex-wrap:wrap;";
+
+  const btns = [
+    {
+      label: "H2",
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+    },
+    {
+      label: "H3",
+      action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+    },
+    {
+      label: "H4",
+      action: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
+    },
+    { label: "B", action: () => editor.chain().focus().toggleBold().run() },
+    { label: "I", action: () => editor.chain().focus().toggleItalic().run() },
+    {
+      label: "• Спіс",
+      action: () => editor.chain().focus().toggleBulletList().run(),
+    },
+    {
+      label: "1. Спіс",
+      action: () => editor.chain().focus().toggleOrderedList().run(),
+    },
+    {
+      label: "Спасылка",
+      action: () => {
+        const url = prompt("URL:");
+        if (url) editor.chain().focus().setLink({ href: url }).run();
+      },
+    },
+    {
+      label: "Тэкст",
+      action: () => editor.chain().focus().setParagraph().run(),
+    },
+    {
+      label: "Ачысціць фармат",
+      action: () => editor.chain().focus().unsetAllMarks().run(),
+    },
+    ,
+  ];
+
+  btns.forEach(({ label, action }) => {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.type = "button";
+    btn.style.cssText =
+      "padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; border:1px solid #ccc; background:#fff;";
+    btn.addEventListener("click", action);
+    toolbar.appendChild(btn);
+  });
+
+  const editorEl = document.getElementById("f-content-editor");
+  editorEl.parentNode.insertBefore(toolbar, editorEl);
 
   function fillForm(lang) {
     const news = langData[lang]?.news;
@@ -149,7 +244,7 @@ function openNewsEditor(item, allNewsData, sha) {
     document.getElementById("f-image-thumb").value = (
       it.image_thumb || ""
     ).replace("/img/news/", "");
-    quill.clipboard.dangerouslyPasteHTML(it.content || "");
+    editor.commands.setContent(it.content || "");
   }
 
   async function switchLang(lang) {
@@ -193,7 +288,7 @@ function openNewsEditor(item, allNewsData, sha) {
             date: fromInputDate(document.getElementById("f-date").value),
             title: document.getElementById("f-title").value,
             excerpt: document.getElementById("f-excerpt").value,
-            content: quill.root.innerHTML,
+            content: editor.getHTML(),
             image: document.getElementById("f-image").value
               ? `/img/news/${document.getElementById("f-image").value}`
               : undefined,
