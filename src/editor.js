@@ -1,4 +1,3 @@
-import { getFile, saveFile } from "./github.js";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -9,7 +8,9 @@ export function createEditor(elementId, content = "") {
     extensions: [StarterKit, Link.configure({ openOnClick: false })],
     content,
   });
-
+  document.getElementById(elementId).addEventListener("click", () => {
+    editor.commands.focus();
+  });
   const toolbar = document.createElement("div");
   toolbar.style.cssText =
     "display:flex; gap:4px; padding:8px; background:#f5f5f5; border:1px solid #ccc; border-bottom:none; flex-wrap:wrap;";
@@ -60,7 +61,10 @@ export function createEditor(elementId, content = "") {
     btn.type = "button";
     btn.style.cssText =
       "padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; border:1px solid #ccc; background:#fff;";
-    btn.addEventListener("click", action);
+    btn.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      action();
+    });
     toolbar.appendChild(btn);
   });
 

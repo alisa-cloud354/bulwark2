@@ -1,7 +1,11 @@
 import { loadNews } from "./news.js";
 import { loadReports } from "./reports.js";
-
-const loaders = { news: loadNews, reports: loadReports };
+import { loadMaterials } from "./materials.js";
+const loaders = {
+  news: loadNews,
+  reports: loadReports,
+  materials: loadMaterials,
+};
 
 function activateSection(section) {
   document
