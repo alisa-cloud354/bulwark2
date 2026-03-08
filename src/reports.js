@@ -73,6 +73,7 @@ export async function loadReports() {
                 updated,
                 res.sha,
               );
+              await new Promise((r) => setTimeout(r, 500));
             }
             loadReports();
           } catch (err) {
@@ -143,9 +144,11 @@ function openReportEditor(item, allData, sha) {
     const data = langData[lang]?.reports;
     if (!data) return;
     const it = data.find((n) => String(n.id) === String(item.id)) || {};
-    document.getElementById("f-date").value = toInputDate(
-      it.date || item.date || "",
-    );
+    if (!document.getElementById("f-date").value) {
+      document.getElementById("f-date").value = toInputDate(
+        it.date || item.date || "",
+      );
+    }
     document.getElementById("f-title").value = it.title || "";
     document.getElementById("f-excerpt").value = it.excerpt || "";
     editor.commands.setContent(it.content || "");
@@ -207,7 +210,14 @@ function openReportEditor(item, allData, sha) {
 
     try {
       const imageFile = document.getElementById("f-image-file").files[0];
-      let imageName = item.image ? item.image.replace("/img/reports/", "") : "";
+      const beItem = langData["be"]?.reports?.find(
+        (n) => String(n.id) === String(item.id),
+      );
+      let imageName = beItem?.image
+        ? beItem.image.replace("/img/reports/", "")
+        : item.image
+          ? item.image.replace("/img/reports/", "")
+          : "";
 
       if (imageFile) {
         if (imageFile.size > 200 * 1024)

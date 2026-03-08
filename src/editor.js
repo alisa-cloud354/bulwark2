@@ -5,7 +5,10 @@ import Link from "@tiptap/extension-link";
 export function createEditor(elementId, content = "") {
   const editor = new Editor({
     element: document.getElementById(elementId),
-    extensions: [StarterKit, Link.configure({ openOnClick: false })],
+    extensions: [
+      StarterKit.configure({ link: false }),
+      Link.configure({ openOnClick: false }),
+    ],
     content,
   });
   document.getElementById(elementId).addEventListener("click", () => {

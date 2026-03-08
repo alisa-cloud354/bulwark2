@@ -76,6 +76,7 @@ export async function loadNews() {
                 updated,
                 res.sha,
               );
+              await new Promise((r) => setTimeout(r, 500));
             }
             loadNews();
           } catch (err) {
@@ -155,18 +156,14 @@ function openNewsEditor(item, allNewsData, sha) {
     const news = langData[lang]?.news;
     if (!news) return;
     const it = news.find((n) => String(n.id) === String(item.id)) || {};
-    document.getElementById("f-date").value = toInputDate(
-      it.date || item.date || "",
-    );
+    // Дату запаўняем толькі калі поле пустое
+    if (!document.getElementById("f-date").value) {
+      document.getElementById("f-date").value = toInputDate(
+        it.date || item.date || "",
+      );
+    }
     document.getElementById("f-title").value = it.title || "";
     document.getElementById("f-excerpt").value = it.excerpt || "";
-    document.getElementById("f-image").value = (it.image || "").replace(
-      "/img/news/",
-      "",
-    );
-    document.getElementById("f-image-thumb").value = (
-      it.image_thumb || ""
-    ).replace("/img/news/", "");
     editor.commands.setContent(it.content || "");
   }
 
@@ -194,8 +191,6 @@ function openNewsEditor(item, allNewsData, sha) {
   });
 
   fillForm("be");
-
-  // Заменіце апрацоўшчык save-btn.addEventListener("click", ...) на гэты:
 
   document.getElementById("save-btn").addEventListener("click", async () => {
     const btn = document.getElementById("save-btn");
@@ -229,12 +224,22 @@ function openNewsEditor(item, allNewsData, sha) {
       const imageFile = document.getElementById("f-image-file").files[0];
       const thumbFile = document.getElementById("f-thumb-file").files[0];
 
-      let imageName = item.image ? item.image.replace("/img/news/", "") : "";
-      let thumbName = item.image_thumb
-        ? item.image_thumb.replace("/img/news/", "")
-        : "";
+      // Бярэм існуючыя фота з BE (яны агульныя для ўсіх моў)
+      const beItem = langData["be"]?.news?.find(
+        (n) => String(n.id) === String(item.id),
+      );
+      let imageName = beItem?.image
+        ? beItem.image.replace("/img/news/", "")
+        : item.image
+          ? item.image.replace("/img/news/", "")
+          : "";
+      let thumbName = beItem?.image_thumb
+        ? beItem.image_thumb.replace("/img/news/", "")
+        : item.image_thumb
+          ? item.image_thumb.replace("/img/news/", "")
+          : "";
 
-      // Загрузка асноўнага фота
+      // Загрузка толькі калі выбраны новы файл
       if (imageFile) {
         if (imageFile.size > 200 * 1024)
           throw new Error("Галоўнае фота больш за 200кб");
@@ -243,7 +248,6 @@ function openNewsEditor(item, allNewsData, sha) {
         imageName = name;
       }
 
-      // Загрузка мініяцюры
       if (thumbFile) {
         if (thumbFile.size > 50 * 1024)
           throw new Error("Мініяцюра больш за 50кб");
@@ -265,16 +269,7 @@ function openNewsEditor(item, allNewsData, sha) {
       const newDate = fromInputDate(document.getElementById("f-date").value);
       const imgPath = imageName ? `/img/news/${imageName}` : "";
       const thumbPath = thumbName ? `/img/news/${thumbName}` : "";
-      for (const lang of langs) {
-        if (!langData[lang]) {
-          try {
-            const res = await getFile(`public/locales/news-${lang}.json`);
-            langData[lang] = { news: res.json, sha: res.sha };
-          } catch {
-            langData[lang] = { news: [], sha: null };
-          }
-        }
-      }
+
       // Пры захаванні мы ідзем па ўсіх загружаных мовах у langData
       for (const lang of langs) {
         if (!langData[lang] || !langData[lang].sha) continue;
