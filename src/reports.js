@@ -181,32 +181,26 @@ function openReportEditor(item, allData, sha) {
 
   document.getElementById("save-btn").addEventListener("click", async () => {
     const btn = document.getElementById("save-btn");
-    btn.textContent = "Захоўваю...";
-    btn.disabled = true;
 
-    // Валідацыя
     const dateVal = document.getElementById("f-date").value;
     const titleVal = document.getElementById("f-title").value.trim();
     const excerptVal = document.getElementById("f-excerpt").value.trim();
 
     if (!dateVal) {
       alert("Запоўніце поле Дата");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
     if (!titleVal) {
       alert("Запоўніце поле Загаловак");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
     if (!excerptVal) {
       alert("Запоўніце поле Кароткі тэкст");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
+
+    btn.textContent = "Захоўваю...";
+    btn.disabled = true;
 
     try {
       const imageFile = document.getElementById("f-image-file").files[0];
