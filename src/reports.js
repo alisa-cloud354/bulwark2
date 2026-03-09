@@ -80,7 +80,7 @@ export async function loadReports() {
             console.error(err);
             if (err.message.includes("409")) {
               alert(
-                "GitHub яшчэ апрацоўвае змены. Пачакайце 30 секунд і паўтарыце.",
+                "GitHub яшчэ апрацоўвае змены. Пачакайце 30 секунд і анавіце старонку",
               );
             } else {
               alert("Памылка пры выдаленні: " + err.message);
@@ -294,8 +294,11 @@ function openReportEditor(item, allData, sha) {
     } catch (e) {
       btn.textContent = "Памылка!";
       btn.disabled = false;
-      console.error(e);
       alert(e.message);
+      console.error(e);
+      setTimeout(() => {
+        btn.textContent = "Захаваць";
+      }, 3000);
     }
   });
 }

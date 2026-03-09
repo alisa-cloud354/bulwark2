@@ -18,7 +18,11 @@ export async function loadMaterials() {
     const { json: materialsRaw, sha } = await getFile(
       "public/locales/materials-be.json",
     );
-    const materials = [...materialsRaw].reverse();
+    const materials = [...materialsRaw].sort((a, b) => {
+      const aNum = parseInt(a.id?.replace("material-", "")) || 0;
+      const bNum = parseInt(b.id?.replace("material-", "")) || 0;
+      return bNum - aNum;
+    });
 
     document.getElementById("materials-list").innerHTML = materials
       .map(
@@ -66,11 +70,18 @@ export async function loadMaterials() {
                 updated,
                 res.sha,
               );
+              await new Promise((r) => setTimeout(r, 1500));
             }
             loadMaterials();
           } catch (err) {
             console.error(err);
-            alert("Памылка пры выдаленні: " + err.message);
+            if (err.message.includes("409")) {
+              alert(
+                "GitHub яшчэ апрацоўвае змены. Пачакайце 30 секунд і анавіце старонку",
+              );
+            } else {
+              alert("Памылка пры выдаленні: " + err.message);
+            }
             loadMaterials();
           }
         }
@@ -79,8 +90,13 @@ export async function loadMaterials() {
     document
       .getElementById("add-material-btn")
       .addEventListener("click", () => {
+        const maxId = Math.max(
+          ...materialsRaw.map(
+            (n) => parseInt(n.id?.replace("material-", "")) || 0,
+          ),
+        );
         const newItem = {
-          id: "",
+          id: `material-${maxId + 1}`,
           category: "",
           title: "",
           short: "",
@@ -105,10 +121,6 @@ function openMaterialEditor(item, allData, sha) {
     </div>
     <div style="display:flex; gap:8px; margin-bottom:24px;">${createLangTabs(langs, "be")}</div>
     <div id="editor-form" style="display:flex; flex-direction:column; gap:16px; max-width:800px;">
-      <label style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.1em;">ID
-        <div style="font-size:11px; color:#555; margin-top:4px;">Лацінскімі літарамі без прабелаў, напр: legalization, psychology</div>
-        <input id="f-id" value="${item.id}" style="display:block; width:100%; margin-top:6px; padding:10px; background:#111; border:1px solid #333; color:#fff; font-size:14px;">
-      </label>
       <label style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.1em;">Катэгорыя
         <div style="font-size:11px; color:#555; margin-top:4px;">Назва раздзела, напр: Легалізацыя, Псіхалогія</div>
         <input id="f-category" style="display:block; width:100%; margin-top:6px; padding:10px; background:#111; border:1px solid #333; color:#fff; font-size:14px;">
@@ -134,8 +146,8 @@ function openMaterialEditor(item, allData, sha) {
   function fillForm(lang) {
     const data = langData[lang]?.data;
     if (!data) return;
-    const it = data.find((n) => String(n.id) === String(item.id)) || {};
-    document.getElementById("f-id").value = it.id || item.id || "";
+    const it = data.find((n) => String(n.id) === String(item.id));
+    if (!it) return;
     document.getElementById("f-category").value = it.category || "";
     document.getElementById("f-title").value = it.title || "";
     document.getElementById("f-short").value = it.short || "";
@@ -169,45 +181,31 @@ function openMaterialEditor(item, allData, sha) {
 
   document.getElementById("save-btn").addEventListener("click", async () => {
     const btn = document.getElementById("save-btn");
-    btn.textContent = "Захоўваю...";
-    btn.disabled = true;
 
-    const idVal = document.getElementById("f-id").value.trim();
     const categoryVal = document.getElementById("f-category").value.trim();
     const titleVal = document.getElementById("f-title").value.trim();
     const shortVal = document.getElementById("f-short").value.trim();
     const contentVal = editor.getHTML();
 
-    if (!idVal) {
-      alert("Запоўніце поле ID");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
-      return;
-    }
     if (!categoryVal) {
       alert("Запоўніце поле Катэгорыя");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
     if (!titleVal) {
       alert("Запоўніце поле Загаловак");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
     if (!shortVal) {
       alert("Запоўніце поле Кароткі тэкст");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
     if (contentVal === "<p></p>" || contentVal === "") {
       alert("Запоўніце поле Поўны тэкст");
-      btn.disabled = false;
-      btn.textContent = "Захаваць";
       return;
     }
+
+    btn.textContent = "Захоўваю...";
+    btn.disabled = true;
 
     try {
       for (const lang of langs) {
@@ -230,7 +228,7 @@ function openMaterialEditor(item, allData, sha) {
         let updated;
         if (isNew) {
           const newItem = {
-            id: idVal,
+            id: String(item.id),
             category: lang === currentLang ? categoryVal : "",
             title: lang === currentLang ? titleVal : "",
             short: lang === currentLang ? shortVal : "",
@@ -242,7 +240,7 @@ function openMaterialEditor(item, allData, sha) {
             String(n.id) === String(item.id)
               ? {
                   ...n,
-                  id: idVal,
+                  id: String(item.id),
                   ...(lang === currentLang
                     ? {
                         category: categoryVal,
@@ -274,6 +272,9 @@ function openMaterialEditor(item, allData, sha) {
       btn.disabled = false;
       console.error(e);
       alert(e.message);
+      setTimeout(() => {
+        btn.textContent = "Захаваць";
+      }, 3000);
     }
   });
 }
