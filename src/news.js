@@ -76,12 +76,18 @@ export async function loadNews() {
                 updated,
                 res.sha,
               );
-              await new Promise((r) => setTimeout(r, 500));
+              await new Promise((r) => setTimeout(r, 1500));
             }
             loadNews();
           } catch (err) {
             console.error(err);
-            alert("Памылка пры выдаленні: " + err.message);
+            if (err.message.includes("409")) {
+              alert(
+                "GitHub яшчэ апрацоўвае змены. Пачакайце 30 секунд і паўтарыце.",
+              );
+            } else {
+              alert("Памылка пры выдаленні: " + err.message);
+            }
             loadNews();
           }
         }
