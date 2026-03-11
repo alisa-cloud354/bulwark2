@@ -1,0 +1,191 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    background: #000000;
+    color: #e5e5e5;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 220px;
+    background: #050505;
+    border-right: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    flex-shrink: 0;
+}
+
+.logo {
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #dc2626;
+    padding: 0 24px 24px;
+    border-bottom: 1px solid #222;
+    margin-bottom: 16px;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-link {
+    padding: 10px 24px;
+    color: #666;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    color: #fff;
+    background: #1a1a1a;
+}
+
+.nav-link.active {
+    color: #dc2626;
+    border-left: 2px solid #dc2626;
+}
+
+#content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+#menu-toggle {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    body {
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    #app {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        max-width: 425px;
+        margin: 0 auto;
+    }
+
+    #sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: none;
+        padding: 16px 20px;
+    }
+
+    .logo {
+        padding: 0 16px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #menu-toggle {
+        background: transparent;
+        border: 1px solid #050505;
+        color: #999;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px 10px;
+        line-height: 1;
+        display: block;
+    }
+
+    #logout-btn {
+        max-width: 350px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    nav {
+        display: none;
+    }
+
+    nav.open {
+        display: flex;
+    }
+
+    #content {
+        padding: 16px 20px;
+        overflow-y: visible;
+        max-width: 425px;
+        margin: 0 auto;
+        width: 100%;
+
+    }
+
+    /* Загаловак + кнопка дадаць — у стоўбчык */
+    #section-news>div:first-child,
+    #section-reports>div:first-child,
+    #section-materials>div:first-child,
+    #section-gallery>div:first-child {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    /* Кожны запіс спісу — у стоўбчык */
+    #news-list>div,
+    #reports-list>div,
+    #materials-list>div,
+    #gallery-list>div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    /* Кнопкі рэдагаваць/выдаліць — у стоўбчык */
+    #news-list>div>div:last-child,
+    #reports-list>div>div:last-child,
+    #materials-list>div>div:last-child,
+    #gallery-list>div>div:last-child {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    #news-list>div>div:last-child button,
+    #reports-list>div>div:last-child button,
+    #materials-list>div>div:last-child button,
+    #gallery-list>div>div:last-child button {
+        width: 100%;
+    }
+
+}
