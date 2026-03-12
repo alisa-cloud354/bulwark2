@@ -88,7 +88,9 @@ export async function uploadFile(path, file) {
       const data = await existing.json();
       existingSha = data.sha;
     }
-  } catch {}
+  } catch {
+    // файл не існуе — працягваем без sha
+  }
 
   const body = {
     message: "admin: upload image",

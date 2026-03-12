@@ -85,7 +85,7 @@ export async function loadReports() {
             } else {
               alert("Памылка пры выдаленні: " + err.message);
             }
-            loadNews();
+            loadReports();
           }
         }
       });

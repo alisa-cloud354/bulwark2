@@ -89,7 +89,7 @@ export function fromInputDate(str) {
   return `${d}.${m}.${y}`;
 }
 
-export function createLangTabs(langs, activeLang, onSwitch) {
+export function createLangTabs(langs, activeLang) {
   return langs
     .map(
       (l) => `
