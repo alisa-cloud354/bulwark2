@@ -42,14 +42,20 @@ function showLoginForm(errorMsg = "") {
         ${errorMsg ? `<div style="color:#dc2626; font-size:13px; margin-bottom:16px;">${errorMsg}</div>` : ""}
         <div style="display:flex; flex-direction:column; gap:12px;">
           <input id="login-email" type="email" placeholder="Эл. пошта" style="padding:10px; background:#1a1a1a; border:1px solid #333; color:#fff; font-size:14px; outline:none;">
-          <input id="login-password" type="password" placeholder="Пароль" style="padding:10px; background:#1a1a1a; border:1px solid #333; color:#fff; font-size:14px; outline:none;">
+          <div style="position:relative;">
+  <input id="login-password" type="password" placeholder="Пароль" style="padding:10px; padding-right:40px; background:#1a1a1a; border:1px solid #333; color:#fff; font-size:14px; outline:none; width:100%;">
+  <button id="toggle-password" type="button" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#666; cursor:pointer; font-size:16px;">👁</button>
+</div>
           <button id="login-btn" style="padding:12px; background:#dc2626; color:#fff; border:none; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; cursor:pointer;">Увайсці</button>
           <button id="forgot-btn" style="padding:8px; background:transparent; color:#666; border:none; font-size:12px; cursor:pointer; text-align:left;">Забылі пароль?</button>
         </div>
       </div>
     </div>
   `;
-
+  document.getElementById("toggle-password").addEventListener("click", () => {
+    const input = document.getElementById("login-password");
+    input.type = input.type === "password" ? "text" : "password";
+  });
   document.getElementById("login-btn").addEventListener("click", async () => {
     const btn = document.getElementById("login-btn");
     const email = document.getElementById("login-email").value.trim();
