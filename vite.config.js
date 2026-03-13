@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://bulwark-eosin.vercel.app",
+        target: "https://bulwark-fund.org",
         changeOrigin: true,
       },
     },
