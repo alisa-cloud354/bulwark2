@@ -125,7 +125,7 @@ function openNewsEditor(item, allNewsData, sha) {
     <div style="display:flex; gap:8px; margin-bottom:24px;">${createLangTabs(langs, "be")}</div>
     <div id="editor-form" style="display:flex; flex-direction:column; gap:16px; max-width:800px;">
       <label style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.1em;">Дата
-        <input id="f-date" type="date" style="display:block; width:100%; margin-top:6px; padding:10px; background:#1050505; border:1px solid #333; color:#fff; font-size:14px;">
+        <input id="f-date" type="date" style="display:block; width:100%; margin-top:6px; padding:10px; background:#050505; border:1px solid #333; color:#fff; font-size:14px;">
       </label>
       <label style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.1em;">Загаловак
         <input id="f-title" style="display:block; width:100%; margin-top:6px; padding:10px; background:#050505; border:1px solid #333; color:#fff; font-size:14px;">
