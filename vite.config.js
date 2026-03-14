@@ -1,5 +1,7 @@
 import { defineConfig } from "vite";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export default defineConfig({
   build: {
     outDir: "dist",
@@ -7,7 +9,9 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://bulwark-fund.org",
+        target: isProd
+          ? "https://bulwark-fund.org"
+          : "https://bulwark-eosin.vercel.app",
         changeOrigin: true,
       },
     },

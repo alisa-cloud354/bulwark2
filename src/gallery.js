@@ -117,7 +117,7 @@ function openGalleryEditor(item, gallery, sha, idx) {
       // 1. ВАЛІДАЦЫЯ ФАЙЛА
       if (fileInput.files[0]) {
         const file = fileInput.files[0];
-
+        console.log(file.type);
         // Праверка фармату (толькі WebP)
         if (file.type !== "image/webp") {
           alert(
