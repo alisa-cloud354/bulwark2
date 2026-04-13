@@ -70,7 +70,7 @@ function showLoginForm(errorMsg = "") {
     btn.disabled = true;
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("https://bulwark-fund.org/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -78,7 +78,7 @@ function showLoginForm(errorMsg = "") {
       const data = await res.json();
 
       if (data.success) {
-        sessionStorage.setItem("admin_token", data.token);
+        sessionStorage.setItem("token", data.token);
         loginEl.remove();
         document.getElementById("app").style.display = "";
         initApp();
@@ -102,7 +102,7 @@ function showLoginForm(errorMsg = "") {
     }
 
     try {
-      await fetch("/api/auth/reset-password", {
+      await fetch("https://bulwark-fund.org/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -122,7 +122,7 @@ function initApp() {
     });
   });
   document.getElementById("logout-btn").addEventListener("click", () => {
-    sessionStorage.removeItem("admin_token");
+    sessionStorage.removeItem("token");
     showLoginForm();
   });
   const hash = location.hash.replace("#", "");
@@ -133,7 +133,7 @@ function initApp() {
 }
 
 // Старт
-const token = sessionStorage.getItem("admin_token");
+const token = sessionStorage.getItem("token");
 if (token) {
   initApp();
 } else {
