@@ -1,19 +1,25 @@
-const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
-const REPO = import.meta.env.VITE_GITHUB_REPO;
-const BRANCH = import.meta.env.VITE_GITHUB_BRANCH || "main";
+const BASE_URL = "https://bulwark-fund.org";
+
+function getHeaders() {
+  const token = sessionStorage.getItem("admin_token");
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+}
 
 export async function getFile(path) {
+  // Мы стукаемся да СЯБЕ ў API, а не ў GitHub напрамую
   const res = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,
+    `${BASE_URL}/api/github?path=${encodeURIComponent(path)}`,
     {
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        Accept: "application/vnd.github+json",
-      },
+      headers: getHeaders(),
     },
   );
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+
+  if (!res.ok) throw new Error(`Памылка API: ${res.status}`);
   const data = await res.json();
+
   const content = decodeURIComponent(
     atob(data.content.replace(/\n/g, ""))
       .split("")
@@ -22,48 +28,35 @@ export async function getFile(path) {
   );
   return { json: JSON.parse(content), sha: data.sha };
 }
+
 export async function saveFile(path, content, sha, isRetry = false) {
-  let currentSha = sha;
-
-  if (!currentSha) {
-    const fresh = await getFile(path);
-    currentSha = fresh.sha;
-  }
-
   const encoded = btoa(
     unescape(encodeURIComponent(JSON.stringify(content, null, 2))),
   );
 
   const res = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}`,
+    `${BASE_URL}/api/github?path=${encodeURIComponent(path)}`,
     {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       body: JSON.stringify({
-        // Дадаем час, каб кожны коміт быў унікальным
-        message: `admin: update ${path} at ${new Date().toISOString()}`,
+        message: `admin: update ${path}`,
         content: encoded,
-        sha: currentSha,
-        branch: BRANCH,
+        sha: sha,
       }),
     },
   );
 
   if (!res.ok) {
     if (res.status === 409 && !isRetry) {
-      console.warn("SHA Conflict. Спрабую апошні раз з новым SHA...");
-      await new Promise((r) => setTimeout(r, 1000));
       const fresh = await getFile(path);
       return saveFile(path, content, fresh.sha, true);
     }
-    throw new Error(`GitHub API error: ${res.status}`);
+    throw new Error(`Памылка захавання: ${res.status}`);
   }
   return await res.json();
 }
+
 export async function uploadFile(path, file) {
   const base64 = await new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -72,46 +65,35 @@ export async function uploadFile(path, file) {
     reader.readAsDataURL(file);
   });
 
-  // Праверым ці існуе файл
   let existingSha = null;
   try {
-    const existing = await fetch(
-      `https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,
+    const check = await fetch(
+      `${BASE_URL}/api/github?path=${encodeURIComponent(path)}`,
       {
-        headers: {
-          Authorization: `Bearer ${GITHUB_TOKEN}`,
-          Accept: "application/vnd.github+json",
-        },
+        headers: getHeaders(),
       },
     );
-    if (existing.ok) {
-      const data = await existing.json();
-      existingSha = data.sha;
+    if (check.ok) {
+      const data = (await check.ok) ? await check.json() : null;
+      if (data) existingSha = data.sha;
     }
   } catch {
-    // файл не існуе — працягваем без sha
+    // Ігнаруем памылку: калі файл не знойдзены, existingSha застанецца null, гэта нармальна
   }
 
-  const body = {
-    message: "admin: upload image",
-    content: base64,
-    branch: BRANCH,
-  };
-  if (existingSha) body.sha = existingSha;
-
   const res = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}`,
+    `${BASE_URL}/api/github?path=${encodeURIComponent(path)}`,
     {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+      headers: getHeaders(),
+      body: JSON.stringify({
+        message: "admin: upload image",
+        content: base64,
+        sha: existingSha,
+      }),
     },
   );
 
-  if (!res.ok) throw new Error(`Upload error: ${res.status}`);
+  if (!res.ok) throw new Error(`Памылка загрузкі: ${res.status}`);
   return await res.json();
 }
