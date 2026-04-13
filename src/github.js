@@ -1,4 +1,4 @@
-const BASE_URL = "https://bulwark-fund.org";
+const BASE_URL = "";
 
 function getHeaders() {
   const token = sessionStorage.getItem("token");
@@ -9,7 +9,6 @@ function getHeaders() {
 }
 
 export async function getFile(path) {
-  // Мы стукаемся да СЯБЕ ў API, а не ў GitHub напрамую
   const res = await fetch(
     `${BASE_URL}/api/github?path=${encodeURIComponent(path)}`,
     {

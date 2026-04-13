@@ -70,7 +70,7 @@ function showLoginForm(errorMsg = "") {
     btn.disabled = true;
 
     try {
-      const res = await fetch("https://bulwark-fund.org/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -102,7 +102,7 @@ function showLoginForm(errorMsg = "") {
     }
 
     try {
-      await fetch("https://bulwark-fund.org/api/auth/reset-password", {
+      await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
