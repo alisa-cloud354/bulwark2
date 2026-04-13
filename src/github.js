@@ -1,7 +1,7 @@
 const BASE_URL = "https://bulwark-fund.org";
 
 function getHeaders() {
-  const token = sessionStorage.getItem("admin_token");
+  const token = sessionStorage.getItem("token");
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
