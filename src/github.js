@@ -1,7 +1,7 @@
 const BASE_URL = "https://bulwark-fund.org";
 
 function getHeaders() {
-  const token = sessionStorage.getItem("token");
+  const token = sessionStorage.getItem("admin_token");
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -9,6 +9,7 @@ function getHeaders() {
 }
 
 export async function getFile(path) {
+  // Мы стукаемся да СЯБЕ ў API, а не ў GitHub напрамую
   const res = await fetch(
     `${BASE_URL}/api/github?path=${encodeURIComponent(path)}`,
     {
