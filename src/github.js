@@ -1,4 +1,4 @@
-const BASE_URL = "https://bulwark-fund.org";
+const BASE_URL = "";
 
 function getHeaders() {
   const token = sessionStorage.getItem("admin_token");
